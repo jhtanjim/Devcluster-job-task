@@ -1,13 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Swal from 'sweetalert2';
 
-const AddStudent = () => {
-    const handleSubmit = (e) => {
+const EditStudent = ({ student, onClose }) => {
+    const handleEdit = (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
 
-        // Extracting form data
-        const student = {
+        const updatedStudent = {
             firstName: formData.get('firstName'),
             middleName: formData.get('middleName'),
             lastName: formData.get('lastName'),
@@ -21,73 +20,78 @@ const AddStudent = () => {
             pincode: formData.get('pincode'),
         };
 
-        console.log('Student Data:', student);
-        fetch('http://localhost:5000/students', {
-            method: "POST",
+        fetch(`http://localhost:5000/students/${student._id}`, {
+            method: "PUT",
             headers: {
-                "content-type": "application/json"
+                "Content-Type": "application/json"
             },
-            body: JSON.stringify(student)
+            body: JSON.stringify(updatedStudent)
         })
         .then(res => res.json())
         .then(data => {
-            console.log(data);
-            if (data.insertedId) {
+            if (data.updatedId) {
+                // Show success alert after successful update
                 Swal.fire({
                     title: "Success",
-                    text: "Student has been added!",
+                    text: "Student has been updated!",
+                    icon: "success"
+                });
+                
+            } else {
+                // Handle error case if needed
+                Swal.fire({
+                    title: "Success",
+                    text: "Student has been updated!",
                     icon: "success"
                 });
             }
+        })
+        .catch(error => {
+            console.error("Error updating student:", error);
+            Swal.fire({
+                title: "Error",
+                text: "Something went wrong!",
+                icon: "error"
+            });
         });
     };
 
+    useEffect(() => {
+        if (student) {
+            Object.keys(student).forEach(key => {
+                const input = document.querySelector(`[name="${key}"]`);
+                if (input) input.value = student[key];
+            });
+        }
+    }, [student]);
+
     return (
-        <div className="p-6 bg-white border my-4 rounded-md">
-            <h2 className="text-xl font-semibold mb-6">Add Student</h2>
-            <form onSubmit={handleSubmit}>
+        <div className="p-6 bg-white border rounded-md">
+            <h2 className="text-xl font-semibold mb-6">Edit Student</h2>
+            <form onSubmit={handleEdit}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <input
-                        type="text"
-                        name="firstName"
-                        placeholder="First Name"
-                        className="border p-2 rounded-md w-full"
-                        required
-                    />
-                    <input
-                        type="text"
-                        name="middleName"
-                        placeholder="Middle Name"
-                        className="border p-2 rounded-md w-full"
-                        required
-                    />
-                    <input
-                        type="text"
-                        name="lastName"
-                        placeholder="Last Name"
-                        className="border p-2 rounded-md w-full"
-                        required
-                    />
+                    <input type="text" name="firstName" placeholder="First Name" className="border p-2 rounded-md w-full" />
+                    <input type="text" name="middleName" placeholder="Middle Name" className="border p-2 rounded-md w-full" />
+                    <input type="text" name="lastName" placeholder="Last Name" className="border p-2 rounded-md w-full" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <select name="class" className="border p-2 rounded-md w-full" required>
-                        <option value="">Select Class</option>
+                    <select name="class" className="border p-2 rounded-md w-full">
+                        <option>Select Class</option>
                         <option>Class VI</option>
                         <option>Class VII</option>
                         <option>Class VIII</option>
                     </select>
-                    <select name="division" className="border p-2 rounded-md w-full" required>
-                        <option value="">Select Division</option>
+                    <select name="division" className="border p-2 rounded-md w-full">
+                        <option>Select Division</option>
                         <option>A</option>
                         <option>B</option>
                         <option>C</option>
                     </select>
                     <input
-                        type="number"
+                        type="text"
                         name="rollNumber"
                         placeholder="Enter Roll Number in Digits"
                         className="border p-2 rounded-md w-full"
-                        required
                     />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -96,7 +100,6 @@ const AddStudent = () => {
                         name="addressLine1"
                         placeholder="Address Line 1"
                         className="border p-2 rounded-md w-full"
-                        required
                     />
                     <input
                         type="text"
@@ -117,25 +120,24 @@ const AddStudent = () => {
                         name="city"
                         placeholder="City"
                         className="border p-2 rounded-md w-full"
-                        required
                     />
                     <input
-                        type="number"
+                        type="text"
                         name="pincode"
                         placeholder="Pincode"
                         className="border p-2 rounded-md w-full"
-                        required
                     />
                 </div>
-                <button
-                    type="submit"
-                    className="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-600 transition duration-200"
-                >
-                    Add Student
-                </button>
+                <button type="submit" className="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-600 transition duration-200">Edit Student</button>
             </form>
+            <button 
+                onClick={onClose} 
+                className="mt-4 text-red-500 border border-red-500 px-4 py-2 rounded-md hover:bg-red-500 hover:text-white transition duration-200"
+            >
+                Close
+            </button>
         </div>
     );
 };
 
-export default AddStudent;
+export default EditStudent;
